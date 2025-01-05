@@ -30,8 +30,11 @@ def salva_lista(username, messaggio):
         except (IndexError, ValueError):
             continue  # Salta righe malformate
 
+    # Crea una lista di righe per il file CSV
+    righe_csv = [[modem, quantita, username if idx == 0 else ""] for idx, (modem, quantita) in enumerate(dati.items())]
+
     # Crea un DataFrame con i dati
-    df = pd.DataFrame([{**dati, "Username": username}])
+    df = pd.DataFrame(righe_csv, columns=["Modem", "Quantità", "Utente"])
 
     # Salva i dati nel file CSV
     df.to_csv(FILE_PATH, mode="w", header=True, index=False)
