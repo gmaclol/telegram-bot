@@ -26,13 +26,13 @@ def salva_lista(username, messaggio):
     # Elimina vecchi file .xlsx
     elimina_vecchi_file(".", ".xlsx")
 
-    righe = messaggio.split("\\n")
+    righe = messaggio.split("\n")
     dati = {modem: 0 for modem in modelli_modem}  # Inizializza tutti i modem a 0
 
     for riga in righe:
         try:
-            parti = riga.split(",")
-            modem = parti[0].strip()
+            parti = riga.split(maxsplit=1)
+            modem = parti[0].strip().upper()  # Uniforma il nome del modem
             quantita = int(parti[1].strip())
             if modem in dati:
                 dati[modem] = quantita
@@ -68,7 +68,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Ciao! Sono il tuo bot per la gestione delle giacenze modem.\n"
         "Puoi inviarmi una lista nel formato:\n"
-        "Modem, Numero\nModem, Numero\n"
+        "Modem Numero\nModem Numero\n"
         "Se non menzioni un modem, sarà registrato con quantità 0.\n"
         "Ogni volta che invii una lista, eliminerò i vecchi file e ti manderò il file aggiornato in formato Excel."
     )
