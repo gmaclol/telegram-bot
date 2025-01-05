@@ -1,3 +1,4 @@
+import os
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -30,9 +31,9 @@ def salva_dati(username, messaggio):
         parti = riga.split(maxsplit=1)
         if len(parti) < 2:
             continue
-        quantità = parti[0].strip()
+        quantita = parti[0].strip()
         nome_modem = autocorreggi(parti[1].strip())
-        dati.append({"Modem": nome_modem, "Quantità": quantità, "Utente": username})
+        dati.append({"Modem": nome_modem, "Quantità": quantita, "Utente": username})
 
     # Salva in un file CSV
     df = pd.DataFrame(dati)
@@ -64,15 +65,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
-# Configurazione del bot
+# Configura l'applicazione Telegram
 def main():
-    app = ApplicationBuilder().token("IL_TUO_TOKEN_BOT").build()
+    BOT_TOKEN = os.getenv("IL_TUO_TOKEN_BOT")
+    if not BOT_TOKEN:
+        raise ValueError("Il token del bot non è stato trovato. Controlla le variabili d'ambiente.")
+
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # Aggiungi i gestori
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Avvio del bot
     app.run_polling()
 
 if __name__ == "__main__":
