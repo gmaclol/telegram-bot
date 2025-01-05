@@ -33,11 +33,14 @@ def salva_dati(username, messaggio):
             continue
         quantita = parti[0].strip()
         nome_modem = autocorreggi(parti[1].strip())
-        dati.append({"Modem": nome_modem, "Quantità": quantita, "Utente": username})
+        dati.append({"Username": username, "Modem": nome_modem, "Quantità": quantita})
 
     # Salva in un file CSV
     df = pd.DataFrame(dati)
-    df.to_csv(FILE_PATH, mode="a", header=False, index=False)
+    if not os.path.exists(FILE_PATH):
+        df.to_csv(FILE_PATH, mode="w", header=True, index=False)
+    else:
+        df.to_csv(FILE_PATH, mode="a", header=False, index=False)
 
 # Gestore per i messaggi
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
