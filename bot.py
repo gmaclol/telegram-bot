@@ -13,7 +13,7 @@ import pandas as pd
 modelli_modem = ["RFID", "POWER", "SFP", "WI-FI 6 VODAFONE", "SIM TRIO", "ONT SKY", "CPE EOLO"]
 
 # File per salvare i dati
-FILE_PATH = "giacenza_modem.csv"
+FILE_PATH = "giacenza_modem.xlsx"
 
 # Funzione per salvare i dati della lista
 def salva_lista(username, messaggio):
@@ -30,14 +30,14 @@ def salva_lista(username, messaggio):
         except (IndexError, ValueError):
             continue  # Salta righe malformate
 
-    # Crea una lista di righe per il file CSV
-    righe_csv = [[modem, quantita, username if idx == 0 else ""] for idx, (modem, quantita) in enumerate(dati.items())]
+    # Crea una lista di righe per il file Excel
+    righe_excel = [[modem, quantita, username if idx == 0 else ""] for idx, (modem, quantita) in enumerate(dati.items())]
 
     # Crea un DataFrame con i dati
-    df = pd.DataFrame(righe_csv, columns=["Modem", "Quantità", "Utente"])
+    df = pd.DataFrame(righe_excel, columns=["Modem", "Quantità", "Utente"])
 
-    # Salva i dati nel file CSV
-    df.to_csv(FILE_PATH, mode="w", header=True, index=False)
+    # Salva i dati nel file Excel
+    df.to_excel(FILE_PATH, index=False)
 
 # Gestore per i messaggi
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -62,7 +62,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Puoi inviarmi una lista nel formato:\n"
         "Modem, Numero\nModem, Numero\n"
         "Se non menzioni un modem, sarà registrato con quantità 0.\n"
-        "Ogni volta che invii una lista, ti manderò il file aggiornato."
+        "Ogni volta che invii una lista, ti manderò il file aggiornato in formato Excel."
     )
 
 # Configura l'applicazione Telegram
