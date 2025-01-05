@@ -15,8 +15,18 @@ modelli_modem = ["RFID", "POWER", "SFP", "WI-FI 6 VODAFONE", "SIM TRIO", "ONT SK
 # File per salvare i dati
 FILE_PATH = "giacenza_modem.xlsx"
 
+# Funzione per eliminare vecchi file nella directory
+def elimina_vecchi_file(directory, estensione):
+    for file in os.listdir(directory):
+        if file.endswith(estensione):
+            os.remove(os.path.join(directory, file))
+
 # Funzione per salvare i dati della lista
 def salva_lista(username, messaggio):
+    # Elimina vecchi file .xlsx e .csv
+    elimina_vecchi_file(".", ".xlsx")
+    elimina_vecchi_file(".", ".csv")
+
     righe = messaggio.split("\n")
     dati = {modem: 0 for modem in modelli_modem}  # Inizializza tutti i modem a 0
 
@@ -30,7 +40,6 @@ def salva_lista(username, messaggio):
         except (IndexError, ValueError):
             continue  # Salta righe malformate
 
-    # Crea una lista di righe per il file Excel
     righe_excel = [[modem, quantita, username if idx == 0 else ""] for idx, (modem, quantita) in enumerate(dati.items())]
 
     # Crea un DataFrame con i dati
@@ -43,12 +52,12 @@ def salva_lista(username, messaggio):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = update.effective_user.username
     messaggio = update.message.text
-    chat_id = update.effective_chat.id
+    chat_id = update.message.chat_id
     try:
         salva_lista(username, messaggio)
         await update.message.reply_text("Dati registrati con successo! Ti invio il file aggiornato.")
 
-        # Invia il file aggiornato
+        # Invia il file Excel aggiornato
         with open(FILE_PATH, "rb") as file:
             await context.bot.send_document(chat_id=chat_id, document=file)
 
@@ -62,7 +71,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Puoi inviarmi una lista nel formato:\n"
         "Modem, Numero\nModem, Numero\n"
         "Se non menzioni un modem, sarà registrato con quantità 0.\n"
-        "Ogni volta che invii una lista, ti manderò il file aggiornato in formato Excel."
+        "Ogni volta che invii una lista, eliminerò i vecchi file e ti manderò il file aggiornato in formato Excel."
     )
 
 # Configura l'applicazione Telegram
