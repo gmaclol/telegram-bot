@@ -8,39 +8,33 @@ from telegram.ext import (
     ContextTypes,
 )
 import pandas as pd
-from fuzzywuzzy import process
 
-# Lista modelli modem
+# Lista completa dei modelli modem
 modelli_modem = ["RFID", "POWER", "SFP", "WI-FI 6 VODAFONE", "SIM TRIO", "ONT SKY", "CPE EOLO"]
 
 # File per salvare i dati
 FILE_PATH = "giacenza_modem.csv"
 
-# Funzione per autocorreggere
-def autocorreggi(nome_modem):
-    correzione = process.extractOne(nome_modem, modelli_modem)
-    if correzione[1] > 70:  # Threshold
-        return correzione[0]
-    return nome_modem
-
-# Funzione per salvare i dati
-def salva_dati(username, messaggio):
+# Funzione per salvare i dati della lista
+def salva_lista(username, messaggio):
     righe = messaggio.split("\n")
-    dati = []
-    for riga in righe:
-        parti = riga.split(maxsplit=1)
-        if len(parti) < 2:
-            continue
-        quantita = parti[0].strip()
-        nome_modem = autocorreggi(parti[1].strip())
-        dati.append({"Username": username, "Modem": nome_modem, "Quantità": quantita})
+    dati = {modem: 0 for modem in modelli_modem}  # Inizializza tutti i modem a 0
 
-    # Salva in un file CSV
-    df = pd.DataFrame(dati)
-    if not os.path.exists(FILE_PATH):
-        df.to_csv(FILE_PATH, mode="w", header=True, index=False)
-    else:
-        df.to_csv(FILE_PATH, mode="a", header=False, index=False)
+    for riga in righe:
+        try:
+            parti = riga.split(",")
+            modem = parti[0].strip()
+            quantita = int(parti[1].strip())
+            if modem in dati:
+                dati[modem] = quantita
+        except (IndexError, ValueError):
+            continue  # Salta righe malformate
+
+    # Crea un DataFrame con i dati
+    df = pd.DataFrame([{**dati, "Username": username}])
+
+    # Salva i dati nel file CSV
+    df.to_csv(FILE_PATH, mode="w", header=True, index=False)
 
 # Gestore per i messaggi
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -48,7 +42,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     messaggio = update.message.text
     chat_id = update.effective_chat.id
     try:
-        salva_dati(username, messaggio)
+        salva_lista(username, messaggio)
         await update.message.reply_text("Dati registrati con successo! Ti invio il file aggiornato.")
 
         # Invia il file aggiornato
@@ -63,9 +57,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Ciao! Sono il tuo bot per la gestione delle giacenze modem.\n"
         "Puoi inviarmi una lista nel formato:\n"
-        "```\n2 RFID\n3 POWER\n1 WI-FI 6 VODAFONE\n```\n"
-        "Ogni volta che mi invii una lista, ti manderò anche il file aggiornato.\n",
-        parse_mode="Markdown"
+        "Modem, Numero\nModem, Numero\n"
+        "Se non menzioni un modem, sarà registrato con quantità 0.\n"
+        "Ogni volta che invii una lista, ti manderò il file aggiornato."
     )
 
 # Configura l'applicazione Telegram
