@@ -23,11 +23,10 @@ def elimina_vecchi_file(directory, estensione):
 
 # Funzione per salvare i dati della lista
 def salva_lista(username, messaggio):
-    # Elimina vecchi file .xlsx e .csv
+    # Elimina vecchi file .xlsx
     elimina_vecchi_file(".", ".xlsx")
-    elimina_vecchi_file(".", ".csv")
 
-    righe = messaggio.split("\n")
+    righe = messaggio.split("\\n")
     dati = {modem: 0 for modem in modelli_modem}  # Inizializza tutti i modem a 0
 
     for riga in righe:
